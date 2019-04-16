@@ -95,7 +95,7 @@ class RealProperty(Base):
 
         cur_tds = rows[2].find_all('td')
         self.owner_name_1 = cur_tds[1].font.string.strip()
-        self.quarter_section = cur_tds[3].font.string.strip()
+        self.quarter_section = helpers.get_int(cur_tds[3].font.string.strip())
 
         cur_tds = rows[3].find_all('td')
         self.owner_name_2 = cur_tds[1].font.string.strip()
@@ -111,7 +111,7 @@ class RealProperty(Base):
 
         cur_tds = rows[6].find_all('td')
         self.city_state_zip = ' '.join(cur_tds[1].font.string.split()) # replace escapes with spaces
-        self.land_size_str = cur_tds[3].font.string.strip() # TODO: Convert this to sqft or acres!
+        self.land_size_str = ' '.join(cur_tds[3].font.string.split()) # same as above. TODO: Convert this to sqft or acres!
 
         cur_tds = rows[7].find_all('td')
         land_value_str = cur_tds[1].find_all('font')[1].string.strip() # will need to be converted to integer

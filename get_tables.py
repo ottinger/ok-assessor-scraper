@@ -81,7 +81,7 @@ def get_valuation_record(my_row):
     cur_year = cur_tds[0].font.string.strip()
 
     cur_dict = {}
-    cur_dict['year'] = cur_year
+    cur_dict['year'] = helpers.get_int(cur_year)
     cur_dict['market_value'] = helpers.get_int(cur_tds[1].font.string.strip())
     cur_dict['taxable_market_value'] = helpers.get_int(cur_tds[2].font.string.strip())
     cur_dict['gross_assessed'] = helpers.get_int(cur_tds[3].font.string.strip())
