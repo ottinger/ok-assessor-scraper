@@ -62,6 +62,8 @@ def get_table_rows(table_number, id):
         # get the next page now
         if table_number == 7:
             input_name = 'fpdbr_24_PagingMove'
+        elif table_number == 13:
+            input_name = 'fpdbr_18_PagingMove' # building record. (propertyid 134581 has more than 1 page of bldgs)
         else:
             input_name = 'fpdbr_13_PagingMove'
         req = sesh.post("https://ariisp1.oklahomacounty.org/AssessorWP5/AN-R.asp", cookies = req.cookies,
