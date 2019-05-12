@@ -15,7 +15,7 @@ As of present, data captured includes:
 * Use Python 3 (3.6.5 recommended)
 * Install the dependencies in pip (bs4, lxml, requests)
 * Choose the quarter sections you want data for; map with quarter section numbers available at https://ariisp1.oklahomacounty.org/assessor/Searches/City_Map_with_Map_Numbers.PDF. Add them to the quarter_sections list in main.py.
-* Run main.py. Database will be saved to results.db.
+* Run main_new_mt.py (multithreaded). Database will be saved to results.db.
 
 ### DEPENDENCIES NEEDED:
 * bs4 (BeautifulSoup)
@@ -29,6 +29,5 @@ As of present, data captured includes:
 * Add support for building detail pages
 * Add support for Personal/Central property results
 * Implement a nicer way to run the scraper
-* Implement multithreading
 * Improve test coverage
 * General cleanup

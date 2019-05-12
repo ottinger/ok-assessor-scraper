@@ -48,10 +48,11 @@ def do_quarter_section(qs):
             finally:
                 lock.release()
             print("ADDED: " + str(cur_property) + " (QS " + str(qs) + ")")
-        else:
-            print("ALREADY EXISTS: " + str(p) + " (QS " + str(qs) + ")")
+        #else:
+            #print("ALREADY EXISTS: " + str(p) + " (QS " + str(qs) + ")")
 
     qs_sem.release()
+    print("QS " + str(qs) + " finished")
 
 nw_central_quarter_sections = [2661,2662,2663,2664,2665,2666,2667,2668,2669,2670,2671,2672,2849,2850,2852,2851,
                                2896,2893,2895,2894,2673,2674,2675,2676,2677,2678,2679,2680,2681,2682,2683,2684,
@@ -59,8 +60,16 @@ nw_central_quarter_sections = [2661,2662,2663,2664,2665,2666,2667,2668,2669,2670
                                2941,2942,2943,2944,2721,2722,2723,2724,2725,2726,2727,2728,2729,2730,2731,2732]
                             # between santa fe and portland, and reno and nw 50
 quarter_sections = nw_central_quarter_sections
+
+threads_list = []
 for qs in quarter_sections:
     print("Thread for qs " + str(qs) + " created")
     t = threading.Thread(target=do_quarter_section, args=(qs,))
     t.start()
+    threads_list.append(t)
     time.sleep(1)
+
+for t in threads_list:
+    t.join()
+
+print("All quarter sections finished")
