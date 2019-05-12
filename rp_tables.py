@@ -25,7 +25,7 @@ class ValuationHistory(Base):
     __tablename__ = "valuationhistory"
 
     id = Column(Integer, primary_key=True)
-    property_id = Column(Integer, ForeignKey('realproperty.id')) # Not to be confused with "propertyid" (assigned by assessor site)
+    local_property_id = Column(Integer, ForeignKey('realproperty.id')) # Not to be confused with "propertyid" (assigned by assessor site)
     property = relationship("RealProperty", back_populates="valuations")
 
     year = Column(Integer)
@@ -43,7 +43,7 @@ class Building(Base):
     __tablename__ = "buildings"
 
     id = Column(Integer, primary_key=True)
-    property_id = Column(Integer, ForeignKey('realproperty.id'))
+    local_property_id = Column(Integer, ForeignKey('realproperty.id'))
     property = relationship("RealProperty", back_populates="buildings")
 
     bldg_id = Column(Integer) # this is specific to the property (starting with 1 for each property)
