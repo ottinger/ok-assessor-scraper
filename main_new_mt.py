@@ -8,19 +8,22 @@ from sqlalchemy.orm import sessionmaker
 import threading
 import time
 
-engine = create_engine('sqlite:///results.db',
-                       connect_args={'check_same_thread': False})
+engine = create_engine('sqlite:///results.db')
 Session = scoped_session(sessionmaker(bind=engine))
 Session.configure(bind=engine)
-session = Session
+session = Session # With a scoped_session, this is the same as Session()
 
 real_property.Base.metadata.create_all(engine)
 
 # Multithreading stuff
-qs_sem = threading.BoundedSemaphore(value=10) # Limit it to 5 threads for now
+qs_sem = threading.BoundedSemaphore(value=5) # Limit it to 5 threads for now
+
+# We will have threads save RealProperty objects here, then the main thread will save/commit them.
+global_property_list = []
+# This lock is for global_property_list, NOT the database! The main thread will do the committing.
 lock = threading.Lock()
 
-# do_squarter_section()
+# do_quarter_section()
 #
 # Obtain properties from quarter section qs, and add them to database. We will have each thread run this function.
 def do_quarter_section(qs):
@@ -29,8 +32,7 @@ def do_quarter_section(qs):
     qs_sem.acquire()
 
     for p in propertyid_list:
-        if session.query(real_property.RealProperty).\
-                filter(real_property.RealProperty.propertyid==p).count() == 0:
+        if p not in extant_propertyids:
             print("starting propertyid "+p)
             cur_property = real_property.RealProperty(propertyid=p)
             cur_property.extractRealPropertyData(propertyid=p)
@@ -40,16 +42,13 @@ def do_quarter_section(qs):
             cur_property.extractBuildings(p)
             print("extractBuildings finished for propertyid "+p)
 
-            # now save the property. this needs to be thread safe
+            # Now save the RealProperty to list. The main thread will save/commit it.
             lock.acquire()
             try:
-                session.add(cur_property)
-                session.commit()
+                global_property_list.append(cur_property)
             finally:
                 lock.release()
-            print("ADDED: " + str(cur_property) + " (QS " + str(qs) + ")")
-        #else:
-            #print("ALREADY EXISTS: " + str(p) + " (QS " + str(qs) + ")")
+            print("COMPLETED: " + str(cur_property) + " (QS " + str(qs) + ")")
 
     qs_sem.release()
     print("QS " + str(qs) + " finished")
@@ -60,7 +59,12 @@ nw_central_quarter_sections = [2661,2662,2663,2664,2665,2666,2667,2668,2669,2670
                                2941,2942,2943,2944,2721,2722,2723,2724,2725,2726,2727,2728,2729,2730,2731,2732]
                             # between santa fe and portland, and reno and nw 50
 quarter_sections = nw_central_quarter_sections
+quarter_sections = [1002, 1003, 1004, 1006]
 
+# Find assessor PROPERTYIDs that already exist in the realproperty table
+extant_propertyids = [x[0] for x in session.query(real_property.RealProperty.propertyid)]
+
+# Create threads
 threads_list = []
 for qs in quarter_sections:
     print("Thread for qs " + str(qs) + " created")
@@ -69,7 +73,20 @@ for qs in quarter_sections:
     threads_list.append(t)
     time.sleep(1)
 
-for t in threads_list:
-    t.join()
+# Wait for workers to return objects, then save them to the database. Keep going as long as we have running threads
+# and/or properties to commit
+while len(threading.enumerate()) > 1 or len(global_property_list) > 0:
+    lock.acquire()
+    try:
+        if len(global_property_list) > 0:
+            for p in global_property_list:
+                session.add(p)
+                session.commit()
+                global_property_list.remove(p)
+                print("ADDED: " + str(p))
+    finally:
+        lock.release()
+    time.sleep(5) # Check only every 5 seconds
+
 
 print("All quarter sections finished")
