@@ -33,14 +33,14 @@ def do_quarter_section(qs):
 
     for p in propertyid_list:
         if p not in extant_propertyids:
-            print("starting propertyid "+p)
+            print("starting propertyid "+str(p))
             cur_property = real_property.RealProperty(propertyid=p)
             cur_property.extractRealPropertyData(propertyid=p)
-            print("extractRealPropertyData finished for propertyid "+p)
+            print("extractRealPropertyData finished for propertyid "+str(p))
             cur_property.extractValuationHistory(p)
-            print("extractValuationHistory finished for propertyid "+p)
+            print("extractValuationHistory finished for propertyid "+str(p))
             cur_property.extractBuildings(p)
-            print("extractBuildings finished for propertyid "+p)
+            print("extractBuildings finished for propertyid "+str(p))
 
             # Now save the RealProperty to list. The main thread will save/commit it.
             lock.acquire()

@@ -21,7 +21,7 @@ def subdivision_search(subdivision="university", block="", lot=""):
     for r in rows:
         cur_url = r.td.find_all('a')[0]['href']
         cur_propertyid = re.findall(r".*\.asp\?PROPERTYID=([0-9]+)", cur_url, re.IGNORECASE)[0]
-        results_list.append(cur_propertyid)
+        results_list.append(int(cur_propertyid))
     return results_list
 
 # map_number_search()
@@ -34,7 +34,7 @@ def map_number_search(map_number):
     for r in rows:
         cur_url = r.find_all('a')[0]['href']
         cur_propertyid = re.findall(r".*\.asp\?PROPERTYID=([0-9]+)", cur_url, re.IGNORECASE)[0]
-        results_list.append(cur_propertyid)
+        results_list.append(int(cur_propertyid))
     return results_list
 
 # do_search()
