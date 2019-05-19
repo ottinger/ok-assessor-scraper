@@ -134,10 +134,10 @@ class RealProperty(Base):
             r'(.+) Block ([a-zA-Z0-9]+) Lot ([a-zA-Z0-9]+)', subdivision_str
         )[0]
 
-        # TODO: Implement legal description
-
-
-
+        # Get legal description (it's technically in another table)
+        rows = mySoup.find_all('table')[4].tbody.find_all('tr')
+        cur_tds = rows[0].find_all('td')
+        self.legal_description = cur_tds[0].font.text.splitlines()[-1].strip()
 
     def extractValuationHistory(self, propertyid):
         try:
