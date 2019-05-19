@@ -59,7 +59,7 @@ nw_central_quarter_sections = [2661,2662,2663,2664,2665,2666,2667,2668,2669,2670
                                2941,2942,2943,2944,2721,2722,2723,2724,2725,2726,2727,2728,2729,2730,2731,2732]
                             # between santa fe and portland, and reno and nw 50
 quarter_sections = nw_central_quarter_sections
-quarter_sections = [1002, 1003, 1004, 1006]
+#quarter_sections = [1002, 1003, 1004, 1006]
 
 # Find assessor PROPERTYIDs that already exist in the realproperty table
 extant_propertyids = [x[0] for x in session.query(real_property.RealProperty.propertyid)]

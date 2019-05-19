@@ -37,7 +37,7 @@ class RealProperty(Base):
     parent_acct = Column(String)
     tax_district = Column(String)
     school_system = Column(String)
-    land_size = Column(Float) # We have to standardize this on square feet *or* acres
+    land_size = Column(Float) # Square feet
     lot_width = Column(Float)
     lot_depth = Column(Float)
     land_value = Column(Integer)
@@ -112,6 +112,12 @@ class RealProperty(Base):
         cur_tds = rows[6].find_all('td')
         self.city_state_zip = ' '.join(cur_tds[1].font.string.split()) # replace escapes with spaces
         self.land_size_str = ' '.join(cur_tds[3].font.string.split()) # same as above. TODO: Convert this to sqft or acres!
+        if re.match(r'(.*) Square Feet', self.land_size_str):
+            self.land_size = helpers.get_float(re.match(r'(.*) Square Feet', self.land_size_str).group(1))
+        elif re.match(r'(.*) Acres', self.land_size_str):
+            land_size_acres = helpers.get_float(re.match(r'(.*) Acres', self.land_size_str).group(1))
+            self.land_size = land_size_acres * 43560 # Convert to square feet
+        print(self.land_size)
 
         cur_tds = rows[7].find_all('td')
         land_value_str = cur_tds[1].find_all('font')[1].string.strip() # will need to be converted to integer
