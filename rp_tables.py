@@ -37,18 +37,3 @@ class ValuationHistory(Base):
     millage = Column(Float)
     tax = Column(Float)
     tax_savings = Column(Float)
-
-
-class Building(Base):
-    __tablename__ = "buildings"
-
-    id = Column(Integer, primary_key=True)
-    local_property_id = Column(Integer, ForeignKey('realproperty.id'))
-    property = relationship("RealProperty", back_populates="buildings")
-
-    bldg_id = Column(Integer) # this is specific to the property (starting with 1 for each property)
-    vacant_or_improved = Column(String)
-    bldg_description = Column(String)
-    year_built = Column(Integer)
-    sq_ft = Column(Integer)
-    number_stories = Column(Integer)

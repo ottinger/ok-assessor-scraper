@@ -11,6 +11,7 @@ from base import Base
 import helpers
 import get_tables
 import rp_tables
+import buildings
 
 
 class RealProperty(Base):
@@ -117,7 +118,6 @@ class RealProperty(Base):
         elif re.match(r'(.*) Acres', self.land_size_str):
             land_size_acres = helpers.get_float(re.match(r'(.*) Acres', self.land_size_str).group(1))
             self.land_size = land_size_acres * 43560 # Convert to square feet
-        print(self.land_size)
 
         cur_tds = rows[7].find_all('td')
         land_value_str = cur_tds[1].find_all('font')[1].string.strip() # will need to be converted to integer
@@ -176,7 +176,7 @@ class RealProperty(Base):
             return self.extractBuildings(propertyid)
         buildingList = []
         for d in building_dicts:
-            b = rp_tables.Building()
+            b = buildings.Building()
             b.bldg_id = d['building_number']
             b.vacant_or_improved = d['vacant_or_improved']
             b.bldg_description = d['building_description']
