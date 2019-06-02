@@ -9,18 +9,22 @@
 # * TransactionHistory
 # * NoticeOfValue (low priority)
 # * BuildingPermitHistory
-# * BuildingTableEntry
+# (Building was moved to buildings.py, as we are going to get the data from the building page)
 
 from sqlalchemy import Column, Integer, Float, String
 from sqlalchemy.orm import relationship
 from sqlalchemy import ForeignKey
 
-import requests
-from bs4 import BeautifulSoup
-import re
-
 from base import Base
 
+import requests
+import get_tables
+import time
+import urllib3
+
+# ValuationHistory
+#
+# Represents one line of the valuation history table (ie, for one year)
 class ValuationHistory(Base):
     __tablename__ = "valuationhistory"
 
@@ -37,3 +41,35 @@ class ValuationHistory(Base):
     millage = Column(Float)
     tax = Column(Float)
     tax_savings = Column(Float)
+
+    # extract()
+    #
+    # Obtains data from the valuation table for a property, and returns it as a list.
+    #
+    # Note that this is a static method, and returns a list of ValuationHistory
+    # objects.
+    def extract(propertyid):
+        try:
+            valuation_dicts = get_tables.get_valuation_list(propertyid)
+        # Occasionally the connection will fail. If so, wait a few and call the function again
+        except (ConnectionError,TimeoutError,urllib3.exceptions.NewConnectionError,
+                urllib3.exceptions.MaxRetryError, requests.ConnectionError) as e:
+            print("Exception caught: "+str(e))
+            time.sleep(10)
+            return ValuationHistory.extract(propertyid)
+
+        valuation_list = []
+        for d in valuation_dicts:
+            v = ValuationHistory()
+            v.year = d['year']
+            v.market_value = d['market_value']
+            v.taxable_market_value = d['taxable_market_value']
+            v.gross_assessed = d['gross_assessed']
+            v.exemption = d['exemption']
+            v.net_assessed = d['net_assessed']
+            v.millage = d['millage']
+            v.tax = d['tax']
+            v.tax_savings = d['tax_savings']
+            valuation_list.append(v)
+
+        return valuation_list

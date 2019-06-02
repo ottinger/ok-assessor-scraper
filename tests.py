@@ -80,25 +80,3 @@ class QuailSpringsTest(unittest.TestCase):
         self.assertEqual(bldg_2.year_built, 1998)
         self.assertEqual(bldg_2.sq_ft, 96340)
         self.assertEqual(bldg_2.number_stories, 1)
-
-
-
-
-
-
-
-'''
-
-        # initialize the db
-        self.engine = create_engine('sqlite:///:memory:')
-        self.Session = sessionmaker(bind=self.engine)
-        self.Session.configure(bind=self.engine)
-        self.session = self.Session()
-
-        real_property.Base.metadata.create_all(self.engine)
-
-        self.session.add(self.qsm)
-        self.session.commit()
-
-
-'''

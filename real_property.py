@@ -9,9 +9,8 @@ import time
 from base import Base
 
 import helpers
-import get_tables
-import rp_tables
-import buildings
+from rp_tables import ValuationHistory
+from buildings import Building
 
 
 class RealProperty(Base):
@@ -140,48 +139,9 @@ class RealProperty(Base):
         self.legal_description = cur_tds[0].font.text.splitlines()[-1].strip()
 
     def extractValuationHistory(self, propertyid):
-        try:
-            valuation_dicts = get_tables.get_valuation_list(propertyid)
-        # Occasionally the connection will fail. If so, wait a few and call the function again
-        except (ConnectionError,TimeoutError,urllib3.exceptions.NewConnectionError,
-                urllib3.exceptions.MaxRetryError, requests.ConnectionError) as e:
-            print("Exception caught: "+str(e))
-            time.sleep(10)
-            return self.extractValuationHistory(propertyid)
-
-        valuationList = []
-        # This needs to be run for each function!
-        for d in valuation_dicts:
-            v = rp_tables.ValuationHistory()
-            v.year = d['year']
-            v.market_value = d['market_value']
-            v.taxable_market_value = d['taxable_market_value']
-            v.gross_assessed = d['gross_assessed']
-            v.exemption = d['exemption']
-            v.net_assessed = d['net_assessed']
-            v.millage = d['millage']
-            v.tax = d['tax']
-            v.tax_savings = d['tax_savings']
-            valuationList.append(v)
-        self.valuations = valuationList
+        vh_list = ValuationHistory.extract(propertyid)
+        self.valuations = vh_list
 
     def extractBuildings(self, propertyid):
-        try:
-            building_dicts = get_tables.get_building_list(propertyid)
-        # Occasionally the connection will fail. If so, wait a few and call the function again
-        except (ConnectionError,TimeoutError,urllib3.exceptions.NewConnectionError,
-                urllib3.exceptions.MaxRetryError, requests.ConnectionError) as e:
-            print("Exception caught: "+str(e))
-            time.sleep(10)
-            return self.extractBuildings(propertyid)
-        buildingList = []
-        for d in building_dicts:
-            b = buildings.Building()
-            b.bldg_id = d['building_number']
-            b.vacant_or_improved = d['vacant_or_improved']
-            b.bldg_description = d['building_description']
-            b.year_built = d['year_built']
-            b.sq_ft = d['square_feet']
-            b.number_stories = d['stories']
-            buildingList.append(b)
-        self.buildings = buildingList
+        bldg_list = Building.extract(propertyid)
+        self.buildings = bldg_list
