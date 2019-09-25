@@ -145,3 +145,8 @@ class RealProperty(Base):
     def extractBuildings(self, propertyid):
         bldg_list = Building.extract(propertyid)
         self.buildings = bldg_list
+
+        get_details = True
+        if get_details:
+            for b in bldg_list:
+                b.extractBuildingDetails()
