@@ -29,6 +29,7 @@ class QuailSpringsTest(unittest.TestCase):
         self.assertEqual(self.qsm.school_system, "Edmond #12")
         self.assertEqual(self.qsm.city_state_zip, "CHICAGO, IL 60661-7905")
         self.assertEqual(self.qsm.land_size_str, "28.15 Acres")
+        self.assertEqual(self.qsm.land_size, 1226214) # 28.15 * 43560
         self.assertEqual(self.qsm.land_value, 3358838)
         self.assertEqual(self.qsm.quarter_section_description, "Sect 7-T13N-R3W Qtr SE")
         self.assertEqual(self.qsm.subdivision, "QUAIL SPRINGS MALL")
@@ -78,9 +79,9 @@ class QuailSpringsTest(unittest.TestCase):
         self.assertEqual(bldg_1.physical_condition, "Good")
         self.assertEqual(bldg_1.avg_floor_height, 15)
         self.assertEqual(bldg_1.percent_sprinkled, 93)
+        self.assertEqual(bldg_1.hvac_type, "Package Unit")
         self.assertEqual(bldg_1.number_res_units, 0)
         self.assertEqual(bldg_1.number_comm_units, 125)
-        self.assertEqual(bldg_1.hvac_type, "Package Unit")
 
         bldg_2 = list(filter(lambda bldg: bldg.bldg_id==2, self.bldgs))[0]
         self.assertEqual(bldg_2.bldg_id, 2)
@@ -95,6 +96,6 @@ class QuailSpringsTest(unittest.TestCase):
         self.assertEqual(bldg_2.physical_condition, "Good")
         self.assertEqual(bldg_2.avg_floor_height, 35)
         self.assertEqual(bldg_2.percent_sprinkled, 100)
+        self.assertEqual(bldg_2.hvac_type, "Package Unit")
         self.assertEqual(bldg_2.number_res_units, 0)
         self.assertEqual(bldg_2.number_comm_units, 1)
-        self.assertEqual(bldg_2.hvac_type, "Package Unit")

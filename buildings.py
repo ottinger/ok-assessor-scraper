@@ -3,7 +3,7 @@
 # Contains a class representing each building, including data in both the buildings
 # table (which was previously in rp_tables.py) as well as the buildings page for each
 # building.
-from sqlalchemy import Column, Integer, Float, String
+from sqlalchemy import Column, Integer, Float, Numeric, String
 from sqlalchemy.orm import relationship
 from sqlalchemy import ForeignKey
 
@@ -31,7 +31,7 @@ class Building(Base):
     bldg_description = Column(String)
     year_built = Column(Integer)
     sq_ft = Column(Integer)
-    number_stories = Column(Integer)
+    number_stories = Column(Numeric) # Change to float?
 
     # Fields from building detail page
 
@@ -42,8 +42,14 @@ class Building(Base):
     # accuracy/quality of the data may be a little uncertain.
 
     remodel_year = Column(Integer)
+    building_name = Column(String) # new
+    alt_land_use_desc = Column(String) # new
     frame_description = Column(String)
     quality_description = Column(String)
+    foundation_description = Column(String) # new
+    exterior = Column(String) # new
+    roof_type = Column(String) # new
+    roof_cover = Column(String) # new
     physical_condition = Column(String)
     avg_floor_height = Column(Integer)
     percent_sprinkled = Column(Integer)
@@ -107,9 +113,14 @@ class Building(Base):
             self.remodel_year = int(rows[6].find_all('td')[1].font.string.strip())
         except ValueError:
             self.remodel_year = -1
-        self.frame_description = rows[10].find_all('td')[1].font.string.strip()
+        self.building_name = rows[7].find_all('td')[1].font.string.strip()
+        self.alt_land_use_desc = rows[8].find_all('td')[1].font.string.strip()
         self.quality_description = rows[9].find_all('td')[1].font.string.strip()
-        self.physical_condition = rows[24].find_all('td')[1].string.strip()
+        self.frame_description = rows[10].find_all('td')[1].font.string.strip()
+        self.foundation_description = rows[11].find_all('td')[1].font.string.strip() # new
+        self.exterior = rows[12].find_all('td')[1].font.string.strip() # new
+        self.roof_type = rows[13].find_all('td')[1].font.string.strip() # new
+        self.roof_cover = rows[14].find_all('td')[1].font.string.strip() # new
         try:
             self.avg_floor_height = int(rows[15].find_all('td')[1].font.string.strip())
         except ValueError:
@@ -118,6 +129,10 @@ class Building(Base):
             self.percent_sprinkled = int(rows[16].find_all('td')[1].font.string.strip())
         except ValueError:
             self.percent_sprinkled = -1
+
+        self.hvac_type = rows[21].find_all('td')[1].font.string.strip()
+
+        self.physical_condition = rows[24].find_all('td')[1].string.strip()
         try:
             self.number_res_units = int(rows[25].find_all('td')[1].font.string.strip())
         except ValueError:
@@ -126,4 +141,3 @@ class Building(Base):
             self.number_comm_units = int(rows[26].find_all('td')[1].font.string.strip())
         except ValueError:
             self.number_comm_units = -1
-        self.hvac_type = rows[21].find_all('td')[1].font.string.strip()
