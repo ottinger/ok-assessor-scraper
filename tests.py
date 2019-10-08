@@ -84,6 +84,11 @@ class QuailSpringsTest(unittest.TestCase):
         self.assertEqual(bldg_1.roof_cover, "Built Up Rock")
         self.assertEqual(bldg_1.avg_floor_height, 15)
         self.assertEqual(bldg_1.percent_sprinkled, 93)
+        self.assertEqual(bldg_1.total_rooms, -1)
+        self.assertEqual(bldg_1.bedrooms, -1)
+        self.assertEqual(bldg_1.full_bathrooms, 0)
+        self.assertEqual(bldg_1.three_quarters_bathrooms, 0)
+        self.assertEqual(bldg_1.half_bathrooms, 0)
         self.assertEqual(bldg_1.hvac_type, "Package Unit")
         self.assertEqual(bldg_1.physical_condition, "Average")
         self.assertEqual(bldg_1.number_res_units, 0)
@@ -107,7 +112,104 @@ class QuailSpringsTest(unittest.TestCase):
         self.assertEqual(bldg_2.roof_cover, "Built Up Rock")
         self.assertEqual(bldg_2.avg_floor_height, 35)
         self.assertEqual(bldg_2.percent_sprinkled, 100)
+        self.assertEqual(bldg_2.total_rooms, -1)
+        self.assertEqual(bldg_2.bedrooms, -1)
+        self.assertEqual(bldg_2.full_bathrooms, 0)
+        self.assertEqual(bldg_2.three_quarters_bathrooms, 0)
+        self.assertEqual(bldg_2.half_bathrooms, 0)
         self.assertEqual(bldg_2.hvac_type, "Package Unit")
         self.assertEqual(bldg_2.physical_condition, "Good")
         self.assertEqual(bldg_2.number_res_units, 0)
         self.assertEqual(bldg_2.number_comm_units, 1)
+
+# Test real property details for single-family home at 22466 Graces Ter (id=286936)
+class GracesTest(unittest.TestCase):
+    def setUp(self):
+        self.graces = real_property.RealProperty(propertyid=286936)
+        self.graces.extractRealPropertyData(propertyid=286936)
+        self.graces.extractValuationHistory(286936)
+        self.vals = self.graces.valuations
+        self.graces.extractBuildings(286936)
+        self.bldgs = self.graces.buildings
+
+    # Test fields in real_property.RealProperty
+    def test_rp(self):
+        self.assertEqual(self.graces.account_number,"R201761220")
+        self.assertEqual(self.graces.property_type, "Residential")
+        self.assertEqual(self.graces.location, "22466 GRACES TER")
+        self.assertEqual(self.graces.building_name_occupant, "")
+        self.assertEqual(self.graces.city, "UNINCORPORATED")
+        # This test does not include owner name/address
+        self.assertEqual(self.graces.quarter_section, 4631)
+        # This test does not include owner name/address
+        self.assertEqual(self.graces.parent_acct, "")
+        # This test does not include owner name/address
+        self.assertEqual(self.graces.tax_district, "TXD 106FD2")
+        # This test does not include owner name/address
+        self.assertEqual(self.graces.school_system, "Deer Creek #6")
+        # This test does not include owner name/address
+        self.assertEqual(self.graces.land_size_str, "0.76 Acres")
+        self.assertEqual(self.graces.land_size, 33105.6)
+        self.assertEqual(self.graces.land_value, 65637)
+        self.assertEqual(self.graces.quarter_section_description, "Sect 8-T14N-R3W Qtr SW")
+        self.assertEqual(self.graces.subdivision, "SOUTHERLY FARMS SEC II")
+        self.assertEqual(self.graces.block, "005")
+        self.assertEqual(self.graces.lot, "037")
+
+    # Test valuations
+    def test_valuations(self):
+        val_2018 = list(filter(lambda val: val.year==2018, self.vals))[0]
+        self.assertEqual(val_2018.year, 2018)
+        self.assertEqual(val_2018.market_value, 309500)
+        self.assertEqual(val_2018.taxable_market_value, 298526)
+        self.assertEqual(val_2018.gross_assessed, 32838)
+        self.assertEqual(val_2018.exemption, 1000)
+        self.assertEqual(val_2018.net_assessed, 31838)
+        self.assertEqual(val_2018.millage, 118.05)
+        self.assertEqual(val_2018.tax, 3758.46)
+        self.assertEqual(val_2018.tax_savings, 260.55)
+
+        # For 2006, market value and taxable market value are different, and county assessor
+        # has no data for millage/tax/tax savings
+        val_2006 = list(filter(lambda val: val.year==2006, self.vals))[0]
+        self.assertEqual(val_2006.year, 2006)
+        self.assertEqual(val_2006.market_value, 263306)
+        self.assertEqual(val_2006.taxable_market_value, 256182)
+        self.assertEqual(val_2006.gross_assessed, 28179)
+        self.assertEqual(val_2006.exemption, 1000)
+        self.assertEqual(val_2006.net_assessed, 27179)
+        self.assertEqual(val_2006.millage, 0)
+        self.assertEqual(val_2006.tax, 0)
+        self.assertEqual(val_2006.tax_savings, 0)
+
+    # Test building info table
+    def test_buildings(self):
+        self.assertEqual(len(self.bldgs), 1)
+
+        bldg_1 = list(filter(lambda bldg: bldg.bldg_id==1, self.bldgs))[0]
+        self.assertEqual(bldg_1.bldg_id, 1)
+        self.assertEqual(bldg_1.vacant_or_improved, "Improved")
+        self.assertEqual(bldg_1.bldg_description, "Ranch 1 Story")
+        self.assertEqual(bldg_1.year_built, 2001)
+        self.assertEqual(bldg_1.sq_ft, 2694)
+        self.assertEqual(bldg_1.number_stories, 1)
+        self.assertEqual(bldg_1.remodel_year, -1)
+        self.assertEqual(bldg_1.building_name, "")
+        self.assertEqual(bldg_1.alt_land_use_desc, "Residential Improvement")
+        self.assertEqual(bldg_1.quality_description, "Good")
+        self.assertEqual(bldg_1.frame_description, "")
+        self.assertEqual(bldg_1.foundation_description, "Slab")
+        self.assertEqual(bldg_1.exterior, "Frame Masonry Veneer")
+        self.assertEqual(bldg_1.roof_type, "Hip/Gable")
+        self.assertEqual(bldg_1.roof_cover, "Composition Shingle")
+        self.assertEqual(bldg_1.avg_floor_height, 8)
+        self.assertEqual(bldg_1.percent_sprinkled, 0)
+        self.assertEqual(bldg_1.total_rooms, 7)
+        self.assertEqual(bldg_1.bedrooms, 3)
+        self.assertEqual(bldg_1.full_bathrooms, 3)
+        self.assertEqual(bldg_1.three_quarters_bathrooms, 0)
+        self.assertEqual(bldg_1.half_bathrooms, 0)
+        self.assertEqual(bldg_1.hvac_type, "Central Air to Air")
+        self.assertEqual(bldg_1.physical_condition, "Average")
+        self.assertEqual(bldg_1.number_res_units, 1)
+        self.assertEqual(bldg_1.number_comm_units, 0)

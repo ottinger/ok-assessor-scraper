@@ -13,6 +13,7 @@ import requests
 import get_tables
 import time
 import urllib3
+import re
 
 from bs4 import BeautifulSoup
 
@@ -44,18 +45,23 @@ class Building(Base):
     remodel_year = Column(Integer)
     building_name = Column(String) # new
     alt_land_use_desc = Column(String) # new
-    frame_description = Column(String)
     quality_description = Column(String)
+    frame_description = Column(String)
     foundation_description = Column(String) # new
     exterior = Column(String) # new
     roof_type = Column(String) # new
     roof_cover = Column(String) # new
-    physical_condition = Column(String)
     avg_floor_height = Column(Integer)
     percent_sprinkled = Column(Integer)
+    total_rooms = Column(Integer)
+    bedrooms = Column(Integer)
+    full_bathrooms = Column(Integer)
+    three_quarters_bathrooms = Column(Integer)
+    half_bathrooms = Column(Integer)
+    hvac_type = Column(String)
+    physical_condition = Column(String)
     number_res_units = Column(Integer)
     number_comm_units = Column(Integer)
-    hvac_type = Column(String)
 
     # extract()
     #
@@ -129,6 +135,40 @@ class Building(Base):
             self.percent_sprinkled = int(rows[16].find_all('td')[1].font.string.strip())
         except ValueError:
             self.percent_sprinkled = -1
+
+        try:
+            self.total_rooms = int(rows[18].find_all('td')[1].font.string.strip())
+        except ValueError:
+            self.total_rooms = -1
+
+        # Number of units with bedrooms. We'll use this for single family homes since
+        # it has number of bedrooms. But for multifamily buildings, we'll just use the
+        # number of units/number of sqft (at least for now).
+        bedrooms_re = r'# of units \(([0-9]+)\) with ([0-9]+) Bedrooms'
+        bedrooms_str = ' '.join(rows[19].find_all('td')[1].font.string.strip().split()) # must remove newlines
+        bedrooms_match = re.match(bedrooms_re, bedrooms_str)
+        if bedrooms_match:
+            bedrooms_str = bedrooms_match.group(2)
+            try:
+                self.bedrooms = int(bedrooms_str) # Again, ONLY FOR SFH's!
+            except ValueError:
+                self.bedrooms = -1
+        else:
+            self.bedrooms = -1
+
+        bathrooms_re = r'\(([0-9]+)\)-Full, \(([0-9]+)\)-3\/4, \(([0-9]+)\)-half'
+        bathrooms_str = ' '.join(rows[20].find_all('td')[1].font.string.strip().split()) # must remove newlines
+        bathrooms_match = re.match(bathrooms_re, bathrooms_str)
+        if bathrooms_match:
+            try:
+                self.full_bathrooms = int(bathrooms_match.group(1))
+                self.three_quarters_bathrooms = int(bathrooms_match.group(2))
+                self.half_bathrooms = int(bathrooms_match.group(3))
+            except ValueError:
+                self.full_bathrooms, self.three_quarters_bathrooms, self.half_bathrooms = -1, -1, -1
+        else:
+            self.full_bathrooms, self.three_quarters_bathrooms, self.half_bathrooms = -1, -1, -1
+
 
         self.hvac_type = rows[21].find_all('td')[1].font.string.strip()
 
