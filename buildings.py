@@ -100,7 +100,6 @@ class Building(Base):
         propertyid = self.property.propertyid
         detail_url = "https://ariisp1.oklahomacounty.org/AssessorWP5/BLDG_Detail.asp?PropertyID=" +\
                 str(propertyid) + "&BuildingSequence=" + str(self.bldg_id)
-        print(detail_url)
 
         try:
             html = requests.get(detail_url).text

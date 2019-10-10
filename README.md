@@ -26,7 +26,6 @@ As of present, data captured includes:
 ### TO DO LIST:
 * Finish implementing fields in RealProperty (there are a couple left)
 * Implement parsing for tables on main page: property status/adjustments/exemptions, deed transaction history, notice of value history, building permit history
-* Add support for building detail pages
 * Add support for Personal/Central property results
 * Implement a nicer way to run the scraper
 * Improve test coverage
