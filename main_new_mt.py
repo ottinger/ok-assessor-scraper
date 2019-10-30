@@ -41,6 +41,8 @@ def do_quarter_section(qs):
             print("extractValuationHistory finished for propertyid "+str(p))
             cur_property.extractBuildings(p)
             print("extractBuildings finished for propertyid "+str(p))
+            cur_property.extractDeedHistory(p)
+            print("extractDeedHistory finished for propertyid "+str(p))
 
             # Now save the RealProperty to list. The main thread will save/commit it.
             lock.acquire()
