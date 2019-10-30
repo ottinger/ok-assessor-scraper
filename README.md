@@ -13,7 +13,7 @@ As of present, data captured includes:
 
 ### HOW TO USE:
 * Use Python 3 (3.6.5 recommended)
-* Install the dependencies in pip (bs4, lxml, requests)
+* Install the dependencies in pip
 * Choose the quarter sections you want data for; map with quarter section numbers available at https://ariisp1.oklahomacounty.org/assessor/Searches/City_Map_with_Map_Numbers.PDF. Add them to the quarter_sections list in main.py.
 * Run main_new_mt.py (multithreaded). Database will be saved to results.db.
 
@@ -21,7 +21,7 @@ As of present, data captured includes:
 * bs4 (BeautifulSoup)
 * lxml
 * requests
-* sqlalchemy
+* SQLAlchemy
 
 ### TO DO LIST:
 * Finish implementing fields in RealProperty (there are a couple left)
