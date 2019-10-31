@@ -120,8 +120,8 @@ def get_transaction_record(my_row): # table_number==10
     cur_dict['date'] = cur_tds[0].font.string.strip()
     # td 1 is link to record lookup, we won't be using that. just book/page
     cur_dict['type'] = cur_tds[2].font.string.strip()
-    cur_dict['book'] = cur_tds[3].a.string.strip()
-    cur_dict['page'] = cur_tds[4].a.string.strip()
+    cur_dict['book'] = helpers.get_int(cur_tds[3].a.string.strip())
+    cur_dict['page'] = helpers.get_int(cur_tds[4].a.string.strip())
     cur_dict['price'] = helpers.get_int(cur_tds[5].font.string.strip())
     cur_dict['grantor'] = cur_tds[6].font.string.strip()
     cur_dict['grantee'] = cur_tds[7].font.string.strip()

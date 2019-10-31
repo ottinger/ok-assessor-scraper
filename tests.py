@@ -1,6 +1,7 @@
 import unittest
 import real_property
 import rp_tables
+import datetime
 
 # Test real property details for Quail Springs Mall, 2501 W Memorial Rd (id=223240)
 class QuailSpringsTest(unittest.TestCase):
@@ -131,6 +132,8 @@ class GracesTest(unittest.TestCase):
         self.vals = self.graces.valuations
         self.graces.extractBuildings(286936)
         self.bldgs = self.graces.buildings
+        self.graces.extractDeedHistory(286936)
+        self.deedtransactions = self.graces.deedtransactions
 
     # Test fields in real_property.RealProperty
     def test_rp(self):
@@ -142,7 +145,7 @@ class GracesTest(unittest.TestCase):
         # This test does not include owner name/address
         self.assertEqual(self.graces.quarter_section, 4631)
         # This test does not include owner name/address
-        self.assertEqual(self.graces.parent_acct, "")
+        self.assertEqual(self.graces.parent_acct, "4631-25-908-8020")
         # This test does not include owner name/address
         self.assertEqual(self.graces.tax_district, "TXD 106FD2")
         # This test does not include owner name/address
@@ -213,3 +216,17 @@ class GracesTest(unittest.TestCase):
         self.assertEqual(bldg_1.physical_condition, "Average")
         self.assertEqual(bldg_1.number_res_units, 1)
         self.assertEqual(bldg_1.number_comm_units, 0)
+
+    def test_deedtransactions(self):
+        self.assertGreaterEqual(len(self.deedtransactions), 7)
+
+        tx_list = list(filter(lambda tx: tx.date.date() == datetime.date(2001, 1, 2), self.deedtransactions))
+        self.assertEqual(len(tx_list), 1)
+        first_tx = tx_list[0]
+
+        self.assertEqual(first_tx.type, "Deeds")
+        self.assertEqual(first_tx.book, 7990)
+        self.assertEqual(first_tx.page, 1571)
+        self.assertEqual(first_tx.price, 30000)
+        self.assertEqual(first_tx.grantor, "SOUTHERLY FARMS LLC")
+        self.assertEqual(first_tx.grantee, "FREEMAN HOMES INC")
