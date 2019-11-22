@@ -152,9 +152,9 @@ def get_permit_record(my_row):
     cur_dict['date'] = cur_tds[0].font.string.strip()
     cur_dict['permit_number'] = cur_tds[1].font.string.strip()
     cur_dict['provided_by'] = cur_tds[2].font.string.strip()
-    cur_dict['building_number'] = cur_tds[3].font.string.strip()
+    cur_dict['building_number'] = helpers.get_int(cur_tds[3].font.string.strip())
     cur_dict['description'] = cur_tds[4].font.string.strip()
-    cur_dict['estimated_cost'] = cur_tds[5].font.string.strip()
+    cur_dict['estimated_cost'] = helpers.get_int(cur_tds[5].font.string.strip())
     cur_dict['status'] = cur_tds[6].font.string.strip()
 
     return cur_dict
