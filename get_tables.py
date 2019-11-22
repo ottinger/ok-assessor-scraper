@@ -22,6 +22,10 @@ def get_transaction_list(id):
     return get_table_rows(10, id)
 
 
+def get_permit_list(id):
+    return get_table_rows(12, id)
+
+
 def get_building_list(id):
     return get_table_rows(13, id)
 
@@ -51,6 +55,8 @@ def get_table_rows(table_number, id):
                     cur_dict = get_sae_record(r)
                 elif table_number==10: # Transaction History (table_number==10)
                     cur_dict = get_transaction_record(r)
+                elif table_number==12: # Building permits
+                    cur_dict = get_permit_record(r)
                 elif table_number==13:
                     cur_dict = get_building_record(r)
                 valuation_list.append(cur_dict)
@@ -60,11 +66,13 @@ def get_table_rows(table_number, id):
             done = True
 
         # get the next page now
-        if table_number == 7:
+        if table_number == 7: # Valuation History
             input_name = 'fpdbr_24_PagingMove'
-        elif table_number == 13:
+        elif table_number == 12: # Building Permit
+            input_name = 'fpdbr_16_PagingMove'
+        elif table_number == 13: # Building Record
             input_name = 'fpdbr_18_PagingMove' # building record. (propertyid 134581 has more than 1 page of bldgs)
-        else:
+        else: # Transaction History
             input_name = 'fpdbr_13_PagingMove'
         req = sesh.post("https://ariisp1.oklahomacounty.org/AssessorWP5/AN-R.asp", cookies = req.cookies,
                             data = { 'PropertyID' : str(id), input_name : '  >   '})
@@ -138,7 +146,18 @@ def get_mailed_nov_record(my_row): # table_number==11
 #
 # Returns a building permit record as a dict
 def get_permit_record(my_row):
-    pass # NOT IMPLEMENTED
+    cur_tds = my_row.find_all('td')
+
+    cur_dict = {}
+    cur_dict['date'] = cur_tds[0].font.string.strip()
+    cur_dict['permit_number'] = cur_tds[1].font.string.strip()
+    cur_dict['provided_by'] = cur_tds[2].font.string.strip()
+    cur_dict['building_number'] = cur_tds[3].font.string.strip()
+    cur_dict['description'] = cur_tds[4].font.string.strip()
+    cur_dict['estimated_cost'] = cur_tds[5].font.string.strip()
+    cur_dict['status'] = cur_tds[6].font.string.strip()
+
+    return cur_dict
 
 # get_building_record()
 #

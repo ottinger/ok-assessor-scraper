@@ -11,6 +11,7 @@ from base import Base
 import helpers
 from rp_tables import ValuationHistory
 from rp_tables import DeedTransaction
+from rp_tables import BuildingPermit
 from buildings import Building
 
 
@@ -51,6 +52,7 @@ class RealProperty(Base):
     valuations = relationship("ValuationHistory", back_populates="property")
     buildings = relationship("Building", back_populates="property") # NOT to be confused with BuildingDetails
     deedtransactions = relationship("DeedTransaction", back_populates="property")
+    buildingpermits = relationship("BuildingPermit", back_populates="property")
 
     def __repr__(self):
         return "<RealProperty(propertyid='%s', location='%s', city='%s'>" % (self.propertyid, self.location, self.city)
@@ -147,6 +149,10 @@ class RealProperty(Base):
     def extractDeedHistory(self, propertyid):
         dt_list = DeedTransaction.extract(propertyid)
         self.deedtransactions = dt_list
+
+    def extractBuildingPermits(self, propertyid):
+        bp_list = BuildingPermit.extract(propertyid)
+        self.buildingpermits = bp_list
 
     def extractBuildings(self, propertyid):
         bldg_list = Building.extract(propertyid)

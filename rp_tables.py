@@ -126,3 +126,43 @@ class DeedTransaction(Base):
 
 
 
+class BuildingPermit(Base):
+    __tablename__ = "buildingpermits"
+
+    id = Column(Integer, primary_key=True)
+    local_property_id = Column(Integer, ForeignKey('realproperty.id')) # Not to be confused with "propertyid" (assigned by assessor site)
+    property = relationship("RealProperty", back_populates="buildingpermits")
+
+    date = Column(Date)
+    permit_number = Column(String)
+    provided_by = Column(String)
+    building_number = Column(Integer)
+    description = Column(String)
+    estimated_cost = Column(Integer)
+    status = Column(String)
+
+    @staticmethod
+    def extract(propertyid):
+        try:
+            permit_dicts = get_tables.get_permit_list(propertyid)
+        # Occasionally the connection will fail. If so, wait a few and call the function again
+        except (ConnectionError,TimeoutError,urllib3.exceptions.NewConnectionError,
+                urllib3.exceptions.MaxRetryError, requests.ConnectionError) as e:
+            print("Exception caught: "+str(e))
+            time.sleep(10)
+            return BuildingPermit.extract(propertyid)
+
+        permit_list = []
+        for d in permit_dicts:
+            p = BuildingPermit()
+            p.date = datetime.strptime(d['date'], "%m/%d/%Y")
+            p.permit_number = d['permit_number']
+            p.provided_by = d['provided_by']
+            p.building_number = d['building_number']
+            p.description = d['description']
+            p.estimated_cost = d['estimated_cost']
+            p.status = d['status']
+
+            permit_list.append(p)
+
+        return permit_list
