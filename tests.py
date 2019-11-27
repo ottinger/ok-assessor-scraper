@@ -1,6 +1,7 @@
 import unittest
 import real_property
 import rp_tables
+import datetime
 
 # Test real property details for Quail Springs Mall, 2501 W Memorial Rd (id=223240)
 class QuailSpringsTest(unittest.TestCase):
@@ -122,6 +123,7 @@ class QuailSpringsTest(unittest.TestCase):
         self.assertEqual(bldg_2.number_res_units, 0)
         self.assertEqual(bldg_2.number_comm_units, 1)
 
+
 # Test real property details for single-family home at 22466 Graces Ter (id=286936)
 class GracesTest(unittest.TestCase):
     def setUp(self):
@@ -131,6 +133,10 @@ class GracesTest(unittest.TestCase):
         self.vals = self.graces.valuations
         self.graces.extractBuildings(286936)
         self.bldgs = self.graces.buildings
+        self.graces.extractDeedHistory(286936)
+        self.deedtransactions = self.graces.deedtransactions
+        self.graces.extractBuildingPermits(286936)
+        self.permits = self.graces.buildingpermits
 
     # Test fields in real_property.RealProperty
     def test_rp(self):
@@ -142,7 +148,7 @@ class GracesTest(unittest.TestCase):
         # This test does not include owner name/address
         self.assertEqual(self.graces.quarter_section, 4631)
         # This test does not include owner name/address
-        self.assertEqual(self.graces.parent_acct, "")
+        self.assertEqual(self.graces.parent_acct, "4631-25-908-8020")
         # This test does not include owner name/address
         self.assertEqual(self.graces.tax_district, "TXD 106FD2")
         # This test does not include owner name/address
@@ -213,3 +219,32 @@ class GracesTest(unittest.TestCase):
         self.assertEqual(bldg_1.physical_condition, "Average")
         self.assertEqual(bldg_1.number_res_units, 1)
         self.assertEqual(bldg_1.number_comm_units, 0)
+
+    def test_deedtransactions(self):
+        self.assertGreaterEqual(len(self.deedtransactions), 7)
+
+        tx_list = list(filter(lambda tx: tx.date.date() == datetime.date(2001, 1, 2), self.deedtransactions))
+        self.assertEqual(len(tx_list), 1)
+        first_tx = tx_list[0]
+
+        self.assertEqual(first_tx.type, "Deeds")
+        self.assertEqual(first_tx.book, 7990)
+        self.assertEqual(first_tx.page, 1571)
+        self.assertEqual(first_tx.price, 30000)
+        self.assertEqual(first_tx.grantor, "SOUTHERLY FARMS LLC")
+        self.assertEqual(first_tx.grantee, "FREEMAN HOMES INC")
+
+    # Test building permits
+    def test_permits(self):
+        self.assertGreaterEqual(len(self.permits), 1)
+
+        tp = list(filter(lambda tx: tx.date.date() == datetime.date(2001, 1, 10), self.permits))
+        self.assertEqual(len(tp), 1)
+        test_permit = tp[0]
+
+        self.assertEqual(test_permit.permit_number, "10271800")
+        self.assertEqual(test_permit.provided_by, "COUNTY")
+        self.assertEqual(test_permit.building_number, 1)
+        self.assertEqual(test_permit.description, "Main Dwellin") # Yes, there's no "g"
+        self.assertEqual(test_permit.estimated_cost, 180000)
+        self.assertEqual(test_permit.status, "Inactive")

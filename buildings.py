@@ -68,6 +68,7 @@ class Building(Base):
     # Static method called from RealProperty class. Given a propertyid, extracts a list of the
     # buildings from the table on main page and creates Building objects. DOES NOT obtain data
     # from building detail pages.
+    @staticmethod
     def extract(propertyid):
         try:
             building_dicts = get_tables.get_building_list(propertyid)

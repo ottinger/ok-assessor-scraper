@@ -7,9 +7,11 @@ This scraper captures assessor data to a sqlite database using SQLAlchemy ORM.
 As of present, data captured includes:
 * Information about the property owner and the parcel itself (from the top of the page) in table **realproperty**
 * Information about the valuation/taxation history of the parcel in table **valuationhistory**
-* Some information about the buildings on the parcel in table **buildings**
+* Information about the buildings on the parcel in table **buildings**
+* Information about the deed history in table **deedtransactions**
+* Information about building permits filed in table **buildingpermits**
 
-*Note that this project is still very much a work in progress, and that a lot of functionality has not been fully implemented yet.*
+*Note that this project is still a work in progress, and that some functionality has not been fully implemented yet.*
 
 ### HOW TO USE:
 * Use Python 3 (3.6.5 recommended)
@@ -24,9 +26,9 @@ As of present, data captured includes:
 * SQLAlchemy
 
 ### TO DO LIST:
-* Finish implementing fields in RealProperty (there are a couple left)
-* Implement parsing for tables on main page: property status/adjustments/exemptions, deed transaction history, notice of value history, building permit history
+* Finish implementing fields in RealProperty (there are a couple left), building detail pages
+* Implement parsing for tables on main page: property status/adjustments/exemptions, notice of value history
 * Add support for Personal/Central property results
-* Implement a nicer way to run the scraper
+* Implement a nicer way to run the scraper/improve multithreading
 * Improve test coverage
 * General cleanup
