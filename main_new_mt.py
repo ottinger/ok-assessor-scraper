@@ -15,47 +15,49 @@ session = Session # With a scoped_session, this is the same as Session()
 
 real_property.Base.metadata.create_all(engine)
 
-# Multithreading stuff
-qs_sem = threading.BoundedSemaphore(value=5) # Limit it to 5 threads for now
-
 # We will have threads save RealProperty objects here, then the main thread will save/commit them.
 global_property_list = []
 # This lock is for global_property_list, NOT the database! The main thread will do the committing.
 lock = threading.Lock()
 
-# do_quarter_section()
-#
-# Obtain properties from quarter section qs, and add them to database. We will have each thread run this function.
-def do_quarter_section(qs):
-    propertyid_list = search_assessor.map_number_search(map_number=qs)
+# This is the pool of propertyid's that still have to be done
+propertyid_pool = []
+# This lock is for propertyid_pool
+propertyid_pool_lock = threading.Lock()
 
-    qs_sem.acquire()
+def scraper_thread():
+    while propertyid_pool:
+        # Get the propertyid to scrape
+        propertyid_pool_lock.acquire()
+        try:
+            cur_propertyid = propertyid_pool.pop()
+        finally:
+            propertyid_pool_lock.release()
+        if cur_propertyid in extant_propertyids:
+            continue
 
-    for p in propertyid_list:
-        if p not in extant_propertyids:
-            print("starting propertyid "+str(p))
-            cur_property = real_property.RealProperty(propertyid=p)
-            cur_property.extractRealPropertyData(propertyid=p)
-            print("extractRealPropertyData finished for propertyid "+str(p))
-            cur_property.extractValuationHistory(p)
-            print("extractValuationHistory finished for propertyid "+str(p))
-            cur_property.extractBuildings(p)
-            print("extractBuildings finished for propertyid "+str(p))
-            cur_property.extractDeedHistory(p)
-            print("extractDeedHistory finished for propertyid "+str(p))
-            cur_property.extractBuildingPermits(p)
-            print("extractBuildingPermits finished for propertyid "+str(p))
+        print("starting propertyid "+str(cur_propertyid))
+        cur_property = real_property.RealProperty(propertyid=cur_propertyid)
+        cur_property.extractRealPropertyData(propertyid=cur_propertyid)
+        print("extractRealPropertyData finished for propertyid "+str(cur_propertyid))
+        cur_property.extractValuationHistory(cur_propertyid)
+        print("extractValuationHistory finished for propertyid "+str(cur_propertyid))
+        cur_property.extractBuildings(cur_propertyid)
+        print("extractBuildings finished for propertyid "+str(cur_propertyid))
+        cur_property.extractDeedHistory(cur_propertyid)
+        print("extractDeedHistory finished for propertyid "+str(cur_propertyid))
+        cur_property.extractBuildingPermits(cur_propertyid)
+        print("extractBuildingPermits finished for propertyid "+str(cur_propertyid))
 
-            # Now save the RealProperty to list. The main thread will save/commit it.
-            lock.acquire()
-            try:
-                global_property_list.append(cur_property)
-            finally:
-                lock.release()
-            print("COMPLETED: " + str(cur_property) + " (QS " + str(qs) + ")")
+        # Now save the RealProperty to list. The main thread will save/commit it.
+        lock.acquire()
+        try:
+            global_property_list.append(cur_property)
+        finally:
+            lock.release()
+        print("COMPLETED: " + str(cur_property))
 
-    qs_sem.release()
-    print("QS " + str(qs) + " finished")
+########################################################################################
 
 nw_central_quarter_sections = [2661,2662,2663,2664,2665,2666,2667,2668,2669,2670,2671,2672,2849,2850,2852,2851,
                                2896,2893,2895,2894,2673,2674,2675,2676,2677,2678,2679,2680,2681,2682,2683,2684,
@@ -68,14 +70,16 @@ quarter_sections = [1002, 1003, 1004, 1006]
 # Find assessor PROPERTYIDs that already exist in the realproperty table
 extant_propertyids = [x[0] for x in session.query(real_property.RealProperty.propertyid)]
 
-# Create threads
-threads_list = []
+# Get list of properties from quarter sections and add them to pool
 for qs in quarter_sections:
-    print("Thread for qs " + str(qs) + " created")
-    t = threading.Thread(target=do_quarter_section, args=(qs,))
+    propertyid_pool = propertyid_pool + search_assessor.map_number_search(map_number=qs)
+
+# Create 5 threads
+threads_list = []
+for i in range(1,6):
+    t = threading.Thread(target=scraper_thread)
     t.start()
     threads_list.append(t)
-    time.sleep(1)
 
 # Wait for workers to return objects, then save them to the database. Keep going as long as we have running threads
 # and/or properties to commit
