@@ -18,10 +18,7 @@ from sqlalchemy import ForeignKey
 from base import Base
 
 from datetime import datetime
-import requests
 import get_tables
-import time
-import urllib3
 
 # ValuationHistory
 #
@@ -51,15 +48,7 @@ class ValuationHistory(Base):
     # objects.
     @staticmethod
     def extract(propertyid):
-        try:
-            valuation_dicts = get_tables.get_valuation_list(propertyid)
-        # Occasionally the connection will fail. If so, wait a few and call the function again
-        except (ConnectionError,TimeoutError,urllib3.exceptions.NewConnectionError,
-                urllib3.exceptions.MaxRetryError, requests.ConnectionError) as e:
-            print("Exception caught: "+str(e))
-            time.sleep(10)
-            return ValuationHistory.extract(propertyid)
-
+        valuation_dicts = get_tables.get_valuation_list(propertyid)
         valuation_list = []
         for d in valuation_dicts:
             v = ValuationHistory()
@@ -99,14 +88,7 @@ class DeedTransaction(Base):
     # objects.
     @staticmethod
     def extract(propertyid):
-        try:
-            transaction_dicts = get_tables.get_transaction_list(propertyid)
-        # Occasionally the connection will fail. If so, wait a few and call the function again
-        except (ConnectionError,TimeoutError,urllib3.exceptions.NewConnectionError,
-                urllib3.exceptions.MaxRetryError, requests.ConnectionError) as e:
-            print("Exception caught: "+str(e))
-            time.sleep(10)
-            return DeedTransaction.extract(propertyid)
+        transaction_dicts = get_tables.get_transaction_list(propertyid)
 
         transaction_list = []
         for d in transaction_dicts:
@@ -143,14 +125,7 @@ class BuildingPermit(Base):
 
     @staticmethod
     def extract(propertyid):
-        try:
-            permit_dicts = get_tables.get_permit_list(propertyid)
-        # Occasionally the connection will fail. If so, wait a few and call the function again
-        except (ConnectionError,TimeoutError,urllib3.exceptions.NewConnectionError,
-                urllib3.exceptions.MaxRetryError, requests.ConnectionError) as e:
-            print("Exception caught: "+str(e))
-            time.sleep(10)
-            return BuildingPermit.extract(propertyid)
+        permit_dicts = get_tables.get_permit_list(propertyid)
 
         permit_list = []
         for d in permit_dicts:

@@ -1,10 +1,9 @@
 from sqlalchemy import Column, Integer, Float, String
 from sqlalchemy.orm import relationship
 
-import requests,urllib3
+import requests
 from bs4 import BeautifulSoup
 import re
-import time
 
 from base import Base
 
@@ -68,15 +67,8 @@ class RealProperty(Base):
         if 'property_html' in kwargs:
             html = kwargs['property_html']
         elif 'propertyid' in kwargs:
-            try:
-                html = requests.get("https://ariisp1.oklahomacounty.org/AssessorWP5/AN-R.asp?PROPERTYID=" +
-                                   str(kwargs['propertyid'])).text
-            # Occasionally the connection will fail. If so, wait a few and call the function again
-            except (ConnectionError,TimeoutError,urllib3.exceptions.NewConnectionError,
-                    urllib3.exceptions.MaxRetryError, requests.ConnectionError) as e:
-                print("Exception caught: "+str(e))
-                time.sleep(10)
-                return self.extractRealPropertyData(propertyid=kwargs['propertyid'])
+            html = requests.get("https://ariisp1.oklahomacounty.org/AssessorWP5/AN-R.asp?PROPERTYID=" +
+                                   str(kwargs['propertyid']), timeout=15).text
         else:
             return None
 
@@ -142,17 +134,22 @@ class RealProperty(Base):
         cur_tds = rows[0].find_all('td')
         self.legal_description = cur_tds[0].font.text.splitlines()[-1].strip()
 
+        return True # successful
+
     def extractValuationHistory(self, propertyid):
         vh_list = ValuationHistory.extract(propertyid)
         self.valuations = vh_list
+        return vh_list
 
     def extractDeedHistory(self, propertyid):
         dt_list = DeedTransaction.extract(propertyid)
         self.deedtransactions = dt_list
+        return dt_list
 
     def extractBuildingPermits(self, propertyid):
         bp_list = BuildingPermit.extract(propertyid)
         self.buildingpermits = bp_list
+        return bp_list
 
     def extractBuildings(self, propertyid):
         bldg_list = Building.extract(propertyid)
@@ -162,3 +159,5 @@ class RealProperty(Base):
         if get_details:
             for b in bldg_list:
                 b.extractBuildingDetails()
+
+        return bldg_list

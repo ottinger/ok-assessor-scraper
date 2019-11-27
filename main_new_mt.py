@@ -7,6 +7,7 @@ from sqlalchemy.orm import sessionmaker
 
 import threading
 import time
+import urllib3,requests,socket # for error handling
 
 engine = create_engine('sqlite:///results.db')
 Session = scoped_session(sessionmaker(bind=engine))
@@ -25,6 +26,7 @@ propertyid_pool = []
 # This lock is for propertyid_pool
 propertyid_pool_lock = threading.Lock()
 
+# Main scraper thread
 def scraper_thread():
     while propertyid_pool:
         # Get the propertyid to scrape
@@ -36,18 +38,34 @@ def scraper_thread():
         if cur_propertyid in extant_propertyids:
             continue
 
-        print("starting propertyid "+str(cur_propertyid))
-        cur_property = real_property.RealProperty(propertyid=cur_propertyid)
-        cur_property.extractRealPropertyData(propertyid=cur_propertyid)
-        print("extractRealPropertyData finished for propertyid "+str(cur_propertyid))
-        cur_property.extractValuationHistory(cur_propertyid)
-        print("extractValuationHistory finished for propertyid "+str(cur_propertyid))
-        cur_property.extractBuildings(cur_propertyid)
-        print("extractBuildings finished for propertyid "+str(cur_propertyid))
-        cur_property.extractDeedHistory(cur_propertyid)
-        print("extractDeedHistory finished for propertyid "+str(cur_propertyid))
-        cur_property.extractBuildingPermits(cur_propertyid)
-        print("extractBuildingPermits finished for propertyid "+str(cur_propertyid))
+        try:
+            print("starting propertyid "+str(cur_propertyid))
+            cur_property = real_property.RealProperty(propertyid=cur_propertyid)
+            cur_property.extractRealPropertyData(propertyid=cur_propertyid)
+            print("extractRealPropertyData finished for propertyid "+str(cur_propertyid))
+            cur_property.extractValuationHistory(cur_propertyid)
+            print("extractValuationHistory finished for propertyid "+str(cur_propertyid))
+            cur_property.extractBuildings(cur_propertyid)
+            print("extractBuildings finished for propertyid "+str(cur_propertyid))
+            cur_property.extractDeedHistory(cur_propertyid)
+            print("extractDeedHistory finished for propertyid "+str(cur_propertyid))
+            cur_property.extractBuildingPermits(cur_propertyid)
+            print("extractBuildingPermits finished for propertyid "+str(cur_propertyid))
+        except (ConnectionError,TimeoutError,urllib3.exceptions.NewConnectionError,
+                urllib3.exceptions.MaxRetryError, requests.ConnectionError,
+                requests.exceptions.ReadTimeout, urllib3.exceptions.ReadTimeoutError,
+                socket.timeout) as e:
+            # If there's a connection error, just put the propertyid back in the pool
+            # and keep going.
+            print("Propertyid " + str(cur_propertyid) + " - exception caught: "+str(e))
+            propertyid_pool_lock.acquire()
+            try:
+                propertyid_pool.append(cur_propertyid)
+            finally:
+                propertyid_pool_lock.release()
+            time.sleep(1)
+            continue
+
 
         # Now save the RealProperty to list. The main thread will save/commit it.
         lock.acquire()
@@ -56,6 +74,17 @@ def scraper_thread():
         finally:
             lock.release()
         print("COMPLETED: " + str(cur_property))
+
+# Thread to scrape list of properties for each quarter section
+def qs_thread(qs):
+    qs_list = search_assessor.map_number_search(map_number=qs)
+
+    propertyid_pool_lock.acquire()
+    try:
+        propertyid_pool.extend(qs_list)
+    finally:
+        propertyid_pool_lock.release()
+    print("List for qs " + str(qs) + " obtained")
 
 ########################################################################################
 
@@ -71,12 +100,21 @@ quarter_sections = [1002, 1003, 1004, 1006]
 extant_propertyids = [x[0] for x in session.query(real_property.RealProperty.propertyid)]
 
 # Get list of properties from quarter sections and add them to pool
+qs_threads_list = []
 for qs in quarter_sections:
-    propertyid_pool = propertyid_pool + search_assessor.map_number_search(map_number=qs)
+    print("Obtaining list for qs " + str(qs))
+    t = threading.Thread(target=qs_thread, args=(qs,))
+    t.start()
+    qs_threads_list.append(t)
+    time.sleep(2)
 
-# Create 5 threads
+while len(threading.enumerate()) > 1:
+    print(qs_threads_list)
+    time.sleep(10)
+
+# Create 6 threads
 threads_list = []
-for i in range(1,6):
+for i in range(1,7):
     t = threading.Thread(target=scraper_thread)
     t.start()
     threads_list.append(t)

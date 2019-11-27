@@ -11,8 +11,6 @@ from base import Base
 
 import requests
 import get_tables
-import time
-import urllib3
 import re
 
 from bs4 import BeautifulSoup
@@ -70,14 +68,7 @@ class Building(Base):
     # from building detail pages.
     @staticmethod
     def extract(propertyid):
-        try:
-            building_dicts = get_tables.get_building_list(propertyid)
-        # Occasionally the connection will fail. If so, wait a few and call the function again
-        except (ConnectionError,TimeoutError,urllib3.exceptions.NewConnectionError,
-                urllib3.exceptions.MaxRetryError, requests.ConnectionError) as e:
-            print("Exception caught: "+str(e))
-            time.sleep(10)
-            return Building.extract(propertyid)
+        building_dicts = get_tables.get_building_list(propertyid)
 
         building_list = []
         for d in building_dicts:
@@ -102,14 +93,7 @@ class Building(Base):
         detail_url = "https://ariisp1.oklahomacounty.org/AssessorWP5/BLDG_Detail.asp?PropertyID=" +\
                 str(propertyid) + "&BuildingSequence=" + str(self.bldg_id)
 
-        try:
-            html = requests.get(detail_url).text
-        # Occasionally the connection will fail. If so, wait a few and call the function again
-        except (ConnectionError,TimeoutError,urllib3.exceptions.NewConnectionError,
-                urllib3.exceptions.MaxRetryError, requests.ConnectionError) as e:
-            print("Exception caught: "+str(e))
-            time.sleep(10)
-            return self.extractBuildingDetails()
+        html = requests.get(detail_url, timeout=15).text
 
 
         mySoup = BeautifulSoup(html, features="lxml")
