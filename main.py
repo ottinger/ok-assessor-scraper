@@ -5,16 +5,10 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import scoped_session
 from sqlalchemy.orm import sessionmaker
 
+import sys
 import threading
 import time
 import urllib3,requests,socket # for error handling
-
-engine = create_engine('sqlite:///results.db')
-Session = scoped_session(sessionmaker(bind=engine))
-Session.configure(bind=engine)
-session = Session # With a scoped_session, this is the same as Session()
-
-real_property.Base.metadata.create_all(engine)
 
 # We will have threads save RealProperty objects here, then the main thread will save/commit them.
 global_property_list = []
@@ -25,6 +19,8 @@ lock = threading.Lock()
 propertyid_pool = []
 # This lock is for propertyid_pool
 propertyid_pool_lock = threading.Lock()
+
+########################################################################################
 
 # Main scraper thread
 def scraper_thread():
@@ -75,6 +71,8 @@ def scraper_thread():
             lock.release()
         print("COMPLETED: " + str(cur_property))
 
+########################################################################################
+
 # Thread to scrape list of properties for each quarter section
 def qs_thread(qs):
     qs_list = search_assessor.map_number_search(map_number=qs)
@@ -88,13 +86,37 @@ def qs_thread(qs):
 
 ########################################################################################
 
+# Process args, figure out what we want to do.
+print(sys.argv)
+if len(sys.argv) < 2:
+    raise Exception("Command is required to proceed, and one was not entered.")
+elif sys.argv[1] == 'get_quarter_sections_all':
+    pass # do stuff
+elif sys.argv[1] == 'get_quarter_sections':
+    pass # prompt user to enter the qs they want
+elif sys.argv[1] == 'get_properties':
+    pass # do stuff
+
+########################################################################################
+
+# Set up DB
+engine = create_engine('sqlite:///results.db')
+Session = scoped_session(sessionmaker(bind=engine))
+Session.configure(bind=engine)
+session = Session # With a scoped_session, this is the same as Session()
+
+real_property.Base.metadata.create_all(engine)
+
+########################################################################################
+
 nw_central_quarter_sections = [2661,2662,2663,2664,2665,2666,2667,2668,2669,2670,2671,2672,2849,2850,2852,2851,
                                2896,2893,2895,2894,2673,2674,2675,2676,2677,2678,2679,2680,2681,2682,2683,2684,
                                2897,2898,2899,2900,2717,2718,2719,2720,2713,2714,2715,2716,2709,2710,2711,2712,
                                2941,2942,2943,2944,2721,2722,2723,2724,2725,2726,2727,2728,2729,2730,2731,2732]
                             # between santa fe and portland, and reno and nw 50
 quarter_sections = nw_central_quarter_sections
-quarter_sections = [1002, 1003, 1004, 1006]
+#quarter_sections = [1002, 1003, 1004, 1006]
+
 
 # Find assessor PROPERTYIDs that already exist in the realproperty table
 extant_propertyids = [x[0] for x in session.query(real_property.RealProperty.propertyid)]
