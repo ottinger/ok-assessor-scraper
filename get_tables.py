@@ -38,7 +38,7 @@ def get_table_rows(table_number, id):
     # We need a session to go between pages properly. Otherwise it goes like: 1, 2, 2, 3, 2, 3, 2, ... forever
     sesh = requests.session()
     # get the first page
-    req = sesh.get("https://ariisp1.oklahomacounty.org/AssessorWP5/AN-R.asp?PROPERTYID="+str(id))
+    req = sesh.get("https://docs.oklahomacounty.org/AssessorWP5/AN-R.asp?PROPERTYID="+str(id))
     data = req.text
 
     the_soup = BeautifulSoup(data, features="lxml")
@@ -74,7 +74,7 @@ def get_table_rows(table_number, id):
             input_name = 'fpdbr_18_PagingMove' # building record. (propertyid 134581 has more than 1 page of bldgs)
         else: # Transaction History
             input_name = 'fpdbr_13_PagingMove'
-        req = sesh.post("https://ariisp1.oklahomacounty.org/AssessorWP5/AN-R.asp", cookies = req.cookies,
+        req = sesh.post("https://docs.oklahomacounty.org/AssessorWP5/AN-R.asp", cookies = req.cookies,
                             data = { 'PropertyID' : str(id), input_name : '  >   '})
         data = req.text
         the_soup = BeautifulSoup(data, features="lxml")

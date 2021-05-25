@@ -1,6 +1,6 @@
 # ok-assessor-scraper
 
-The goal of this project is to develop a scraper/API to capture data from the Oklahoma County, OK Assessor Database at https://ariisp1.oklahomacounty.org/AssessorWP5/DefaultSearch.asp.
+The goal of this project is to develop a scraper/API to capture data from the Oklahoma County, OK Assessor Database at https://docs.oklahomacounty.org/AssessorWP5/DefaultSearch.asp.
 
 This scraper captures assessor data to a sqlite database using SQLAlchemy ORM.
 

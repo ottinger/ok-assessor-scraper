@@ -69,7 +69,7 @@ class RealProperty(Base):
             html = kwargs['property_html']
         elif 'propertyid' in kwargs:
             try:
-                html = requests.get("https://ariisp1.oklahomacounty.org/AssessorWP5/AN-R.asp?PROPERTYID=" +
+                html = requests.get("https://docs.oklahomacounty.org/AssessorWP5/AN-R.asp?PROPERTYID=" +
                                    str(kwargs['propertyid'])).text
             # Occasionally the connection will fail. If so, wait a few and call the function again
             except (ConnectionError,TimeoutError,urllib3.exceptions.NewConnectionError,
