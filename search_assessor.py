@@ -40,6 +40,7 @@ def map_number_search(map_number):
                 return []
             else:
                 logging.error("Failure finding map_number_search. row: " + str(r) + " map_number: " + str(map_number))
+                return []
         cur_propertyid = re.findall(r".*\.asp\?PROPERTYID=([0-9]+)", cur_url, re.IGNORECASE)[0]
         results_list.append(int(cur_propertyid))
     return results_list
