@@ -91,16 +91,32 @@ print(sys.argv)
 if len(sys.argv) < 2:
     raise Exception("Command is required to proceed, and one was not entered.")
 elif sys.argv[1] == 'get_quarter_sections_all':
-    pass # do stuff
+    # Get all quarter sections, 1001-4944. (Some of these aren't used, find a way to identify them?)
+    # 2 arguments or 3 if filename specified
+    if len(sys.argv) < 3:
+        filename = 'results.db'
+    quarter_sections = [x for x in range(1001,4945)]
+    action = 'qs'
 elif sys.argv[1] == 'get_quarter_sections':
-    pass # prompt user to enter the qs they want
+    # 2 arguments or 3 if filename specified
+    if len(sys.argv) < 3:
+        filename = 'results.db'
+    qs_input = input("Please enter the quarter sections you want to search for, delimited by commas: ")
+    quarter_sections = qs_input.split(",")
+    action = 'qs'
 elif sys.argv[1] == 'get_properties':
-    pass # do stuff
+    # 3 arguments: Filename must be specified.
+    if len(sys.argv) < 3:
+        raise Exception("Filename for database must be specified to run get_properties.")
+    filename = sys.argv[2]
+    action = 'properties'
+else:
+    raise Exception("Command entered was invalid.")
 
 ########################################################################################
 
 # Set up DB
-engine = create_engine('sqlite:///results.db')
+engine = create_engine('sqlite:///'+filename)
 Session = scoped_session(sessionmaker(bind=engine))
 Session.configure(bind=engine)
 session = Session # With a scoped_session, this is the same as Session()
@@ -108,15 +124,6 @@ session = Session # With a scoped_session, this is the same as Session()
 real_property.Base.metadata.create_all(engine)
 
 ########################################################################################
-
-nw_central_quarter_sections = [2661,2662,2663,2664,2665,2666,2667,2668,2669,2670,2671,2672,2849,2850,2852,2851,
-                               2896,2893,2895,2894,2673,2674,2675,2676,2677,2678,2679,2680,2681,2682,2683,2684,
-                               2897,2898,2899,2900,2717,2718,2719,2720,2713,2714,2715,2716,2709,2710,2711,2712,
-                               2941,2942,2943,2944,2721,2722,2723,2724,2725,2726,2727,2728,2729,2730,2731,2732]
-                            # between santa fe and portland, and reno and nw 50
-quarter_sections = nw_central_quarter_sections
-#quarter_sections = [1002, 1003, 1004, 1006]
-
 
 # Find assessor PROPERTYIDs that already exist in the realproperty table
 extant_propertyids = [x[0] for x in session.query(real_property.RealProperty.propertyid)]
