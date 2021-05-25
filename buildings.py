@@ -90,7 +90,7 @@ class Building(Base):
     # but rather to be run on an existing Building object.
     def extractBuildingDetails(self):
         propertyid = self.property.propertyid
-        detail_url = "https://ariisp1.oklahomacounty.org/AssessorWP5/BLDG_Detail.asp?PropertyID=" +\
+        detail_url = "https://docs.oklahomacounty.org/AssessorWP5/BLDG_Detail.asp?PropertyID=" +\
                 str(propertyid) + "&BuildingSequence=" + str(self.bldg_id)
 
         html = requests.get(detail_url, timeout=15).text

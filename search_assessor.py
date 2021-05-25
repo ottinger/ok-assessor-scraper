@@ -16,7 +16,7 @@ def subdivision_search(subdivision="university", block="", lot=""):
     rows = do_search(input_params={'SubdivisionName' : subdivision,
                   'Block' : block,
                   'Lot' : lot},
-                 search_address="https://ariisp1.oklahomacounty.org/AssessorWP5/SubdivisionSearch.asp")
+                 search_address="https://docs.oklahomacounty.org/AssessorWP5/SubdivisionSearch.asp")
     results_list = []
     for r in rows:
         cur_url = r.td.find_all('a')[0]['href']
@@ -29,7 +29,7 @@ def subdivision_search(subdivision="university", block="", lot=""):
 # Calls do_search() to perform a map number/quarter section search.
 def map_number_search(map_number):
     rows = do_search(input_params={"MapNumber": str(map_number)},
-                     search_address="https://ariisp1.oklahomacounty.org/AssessorWP5/MapNumberSearch.asp")
+                     search_address="https://docs.oklahomacounty.org/AssessorWP5/MapNumberSearch.asp")
     results_list = []
     for r in rows:
         cur_url = r.find_all('a')[0]['href']
@@ -55,7 +55,7 @@ def do_search(search_address, input_params):
     # We need a session to go between pages properly.
     sesh = requests.session()
     # get the front search page to establish session
-    req = sesh.get("https://ariisp1.oklahomacounty.org/AssessorWP5/DefaultSearch.asp")
+    req = sesh.get("https://docs.oklahomacounty.org/AssessorWP5/DefaultSearch.asp")
 
     all_rows = []
     done = False
