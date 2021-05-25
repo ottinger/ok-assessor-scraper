@@ -4,6 +4,7 @@
 #
 # Search functionality will be implemented for certain types of searches as needed. No plans
 # currently to implement *everything*.
+import logging
 import requests
 import re
 from bs4 import BeautifulSoup
@@ -32,7 +33,13 @@ def map_number_search(map_number):
                      search_address="https://docs.oklahomacounty.org/AssessorWP5/MapNumberSearch.asp")
     results_list = []
     for r in rows:
-        cur_url = r.find_all('a')[0]['href']
+        try:
+            cur_url = r.find_all('a')[0]['href']
+        except Exception:
+            if "No records returned." in r:
+                return []
+            else:
+                logging.error("Failure finding map_number_search. row: " + str(r) + " map_number: " + str(map_number))
         cur_propertyid = re.findall(r".*\.asp\?PROPERTYID=([0-9]+)", cur_url, re.IGNORECASE)[0]
         results_list.append(int(cur_propertyid))
     return results_list
