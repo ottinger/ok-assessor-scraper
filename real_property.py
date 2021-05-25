@@ -122,7 +122,7 @@ class RealProperty(Base):
             land_size_acres = helpers.get_float(re.match(r'(.*) Acres', self.land_size_str).group(1))
             self.land_size = land_size_acres * 43560 # Convert to square feet
 
-        cur_tds = rows[7].find_all('td')
+        cur_tds = rows[8].find_all('td')
         land_value_str = cur_tds[1].find_all('font')[1].string.strip() # will need to be converted to integer
         self.land_value = helpers.get_int(land_value_str)
         # TODO: Implement lot dimensions
