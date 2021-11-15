@@ -1,6 +1,5 @@
 import unittest
-import real_property
-import rp_tables
+from old import real_property
 import datetime
 
 # Test real property details for Quail Springs Mall, 2501 W Memorial Rd (id=223240)

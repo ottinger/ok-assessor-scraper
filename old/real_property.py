@@ -1,10 +1,9 @@
 from sqlalchemy import Column, Integer, Float, String
 from sqlalchemy.orm import relationship
 
-import requests,urllib3
+import requests
 from bs4 import BeautifulSoup
 import re
-import time
 
 from base import Base
 
@@ -12,7 +11,7 @@ import helpers
 from rp_tables import ValuationHistory
 from rp_tables import DeedTransaction
 from rp_tables import BuildingPermit
-from buildings import Building
+from old.buildings import Building
 
 
 class RealProperty(Base):

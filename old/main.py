@@ -94,13 +94,13 @@ elif sys.argv[1] == 'get_quarter_sections_all':
     # Get all quarter sections, 1001-4944. (Some of these aren't used, find a way to identify them?)
     # 2 arguments or 3 if filename specified
     if len(sys.argv) < 3:
-        filename = 'results.db'
+        filename = '../results.db'
     quarter_sections = [x for x in range(1001,4945)]
     action = 'qs'
 elif sys.argv[1] == 'get_quarter_sections':
     # 2 arguments or 3 if filename specified
     if len(sys.argv) < 3:
-        filename = 'results.db'
+        filename = '../results.db'
     qs_input = input("Please enter the quarter sections you want to search for, delimited by commas: ")
     quarter_sections = qs_input.split(",")
     action = 'qs'

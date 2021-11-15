@@ -18,7 +18,8 @@ from sqlalchemy import ForeignKey
 from base import Base
 
 from datetime import datetime
-import get_tables
+from old import get_tables
+
 
 # ValuationHistory
 #

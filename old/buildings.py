@@ -3,7 +3,7 @@
 # Contains a class representing each building, including data in both the buildings
 # table (which was previously in rp_tables.py) as well as the buildings page for each
 # building.
-from sqlalchemy import Column, Integer, Float, Numeric, String
+from sqlalchemy import Column, Integer, Numeric, String
 from sqlalchemy.orm import relationship
 from sqlalchemy import ForeignKey
 
@@ -15,7 +15,6 @@ import re
 
 from bs4 import BeautifulSoup
 
-import real_property
 
 class Building(Base):
     __tablename__ = "buildings"
