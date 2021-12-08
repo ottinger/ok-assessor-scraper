@@ -10,11 +10,19 @@ import requests
 from data_parser import OklahomaCountyAssessorDataParser
 from bs4 import BeautifulSoup
 
-# TODO: add more table types
-PAGINATED_TABLE_TYPES = enum.Enum('PAGINATED_TABLE_TYPES', {'VALUE_HISTORY': 7,
-                                                            'BUILDING_PERMITS': 12,
-                                                            'BUILDINGS': 13,
-                                                            'DEED_TRANSACTIONS': 14})
+
+class PaginatedTableTypes(enum.Enum):
+    VALUE_HISTORY = 7
+    S_A_E = 8
+    DEED_TRANSACTIONS = 10
+    NOTICE_OF_VALUE = 11
+    BUILDING_PERMITS = 12
+    BUILDINGS = 13
+
+
+    def __str__(self):
+        return str(self.name)
+
 
 class DataGrabber:
     def __init__(self):
@@ -35,6 +43,7 @@ class DataGrabber:
 
         req = self.session.post(url, cookies=self.cookies, data=post_data)
         return req.text
+
 
 # OklahomaCountyAssessorRecordDataGrabber
 #
@@ -77,22 +86,27 @@ class OklahomaCountyAssessorRecordDataGrabber(DataGrabber):
     def _get_table_post_input_name(table_number):
         if table_number == 7:  # Valuation History
             input_name = 'fpdbr_24_PagingMove'
+        elif table_number == 10:  # Transaction History
+            input_name = 'fpdbr_13_PagingMove'
+        elif table_number == 11:  # Last Mailed Notice Of Value
+            input_name = 'fpdbr_22_PagingMove'
         elif table_number == 12:  # Building Permit
             input_name = 'fpdbr_16_PagingMove'
         elif table_number == 13:  # Building Record
             input_name = 'fpdbr_18_PagingMove'  # building record. (propertyid 134581 has more than 1 page of bldgs)
-        else:  # Transaction History
-            input_name = 'fpdbr_13_PagingMove'
+        else:
+            input_name = None
         return input_name
 
-    # _get_successive_pages_for_main_page_tables()
+    # get_paginated_table_from_main_page()
     #
     # Gets page data for an individual table on the main page. (eg: valuation history, transaction, etc)
     # These tables are paginated and the Assessor webapp requires you to send a POST request (with cookies and session)
     # to switch between pages.
     #
     # Pass in a constant from PAGINATED_TABLE_TYPES
-    def get_paginated_tables_from_main_page(self, propertyid, table_id):
+    def get_paginated_table_from_main_page(self, propertyid, table_enum):
+        table_id = table_enum.value
         results = []
         stop = False
 
@@ -110,5 +124,6 @@ class OklahomaCountyAssessorRecordDataGrabber(DataGrabber):
             req = self.session.post("https://docs.oklahomacounty.org/AssessorWP5/AN-R.asp", cookies=self.cookies,
                                     data={'PropertyID': str(propertyid), input_name: '  >   '})
             data = req.text
+            results.append(data)
             stop = self._table_on_last_page(data, table_id)
         return results
