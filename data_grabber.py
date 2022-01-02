@@ -7,7 +7,6 @@
 import enum
 import requests
 
-from data_parser import OklahomaCountyAssessorDataParser
 from bs4 import BeautifulSoup
 
 
@@ -86,6 +85,8 @@ class OklahomaCountyAssessorRecordDataGrabber(DataGrabber):
     def _get_table_post_input_name(table_number):
         if table_number == 7:  # Valuation History
             input_name = 'fpdbr_24_PagingMove'
+        elif table_number == 8:  # Status/Adjustments/Exemptions
+            input_name = None
         elif table_number == 10:  # Transaction History
             input_name = 'fpdbr_13_PagingMove'
         elif table_number == 11:  # Last Mailed Notice Of Value
@@ -125,5 +126,5 @@ class OklahomaCountyAssessorRecordDataGrabber(DataGrabber):
                                     data={'PropertyID': str(propertyid), input_name: '  >   '})
             data = req.text
             results.append(data)
-            stop = self._table_on_last_page(data, table_id)
+            stop = self._table_on_last_page(data, table_id) if input_name else True
         return results

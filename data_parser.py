@@ -2,12 +2,15 @@ from bs4 import BeautifulSoup
 import helpers
 import re
 
+from data_grabber import PaginatedTableTypes
+
 
 class MultiPageRecordDataParser:
     # get_valuation_record()
     #
     # Returns a unit of valuation history for one year. Takes a row from the beautifulsoup
     # object as an arg.
+    @staticmethod
     def get_valuation_record(my_row):
         cur_tds = my_row.find_all('td')
         cur_year = cur_tds[0].font.string.strip()
@@ -29,6 +32,7 @@ class MultiPageRecordDataParser:
     # Returns a record in the Property Account Status/Adjustments/Exemptions table.
     #
     # NOT TESTED
+    @staticmethod
     def get_sae_record(my_row):  # table_number==9
         cur_tds = my_row.find_all('td')
 
@@ -43,6 +47,7 @@ class MultiPageRecordDataParser:
     # get_transaction_record()
     #
     # Returns a transaction record as a dict. To be interchangeable with get_valuation_record()
+    @staticmethod
     def get_transaction_record(my_row):  # table_number==10
         cur_tds = my_row.find_all('td')
 
@@ -61,12 +66,14 @@ class MultiPageRecordDataParser:
     # get_mailed_nov_record()
     #
     # Returns a Mailed Notice Of Value record as a dict
+    @staticmethod
     def get_mailed_nov_record(my_row):  # table_number==11
-        pass  # NOT IMPLEMENTED
+        return {}  # NOT IMPLEMENTED
 
     # get_permit_record()
     #
     # Returns a building permit record as a dict
+    @staticmethod
     def get_permit_record(my_row):
         cur_tds = my_row.find_all('td')
 
@@ -84,6 +91,7 @@ class MultiPageRecordDataParser:
     # get_building_record()
     #
     # Returns a record for a building on a parcel as a dict
+    @staticmethod
     def get_building_record(my_row):  # table_number==13
         cur_tds = my_row.find_all('td')
 
@@ -113,24 +121,41 @@ class MultiPageRecordDataParser:
     # parse_paginated_table_record()
     #
     # Parse a row in the table.
-    def parse_paginated_table_record(self, record, table_id):
-        pass
+    @staticmethod
+    def parse_paginated_table_row(row, table_enum):
+        if table_enum == PaginatedTableTypes.VALUE_HISTORY:
+            return MultiPageRecordDataParser.get_valuation_record(row)
+        elif table_enum == PaginatedTableTypes.S_A_E:
+            return MultiPageRecordDataParser.get_sae_record(row)
+        elif table_enum == PaginatedTableTypes.DEED_TRANSACTIONS:
+            return MultiPageRecordDataParser.get_transaction_record(row)
+        elif table_enum == PaginatedTableTypes.NOTICE_OF_VALUE:
+            return MultiPageRecordDataParser.get_mailed_nov_record(row)
+        elif table_enum == PaginatedTableTypes.BUILDING_PERMITS:
+            return MultiPageRecordDataParser.get_permit_record(row)
+        elif table_enum == PaginatedTableTypes.BUILDINGS:
+            return MultiPageRecordDataParser.get_building_record(row)
+        else:
+            return None
 
     # parse_paginated_tables()
     #
     # Parse the results we get from OklahomaCountyAssessorRecordDataGrabber.get_paginated_tables_from_main_page().
-    def parse_paginated_tables(self, page_list, table_enum):
+    @staticmethod
+    def parse_paginated_tables(page_list, table_enum):
         table_id = table_enum.value
+        results = []
 
         for cur_page in page_list:
             the_soup = BeautifulSoup(cur_page, features="lxml")
             rows = the_soup.find_all('table')[table_id].tbody.find_all('tr')
 
             for row in rows:
-                pass
-            pass
-        pass
+                if row.find_all('p'):  # Make sure this is a row that actually contains data.
+                    cur_result = MultiPageRecordDataParser.parse_paginated_table_row(row, table_enum)
+                    results.append(cur_result)
 
+        return results
 
 # We will have 1 instance of this for each property record.....?
 # Probably not. All methods static, get_property_record.py will piece it all together.
