@@ -11,7 +11,7 @@ def get_int(the_str):
     try:
         return int(the_str.replace(',', ''))
     except:
-        return 0 # sometimes we will have blank input, see txns on PropertyID=151340 for example
+        return None  # sometimes we will have blank input, see txns on PropertyID=151340 for example
 
 # get_float()
 #
@@ -21,8 +21,8 @@ def get_int(the_str):
 def get_float(the_str):
     try:
         return float(the_str.replace(',', ''))
-    except: # most common if input is blank
-        return 0.0
+    except:  # most common if input is blank
+        return None
 
 # get_sq_ft()
 #
