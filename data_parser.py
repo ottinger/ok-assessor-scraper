@@ -65,8 +65,18 @@ class MultiPageRecordDataParser:
     #
     # Returns a Mailed Notice Of Value record as a dict
     @staticmethod
-    def get_mailed_nov_record(my_row):  # table_number==11
-        return {}  # NOT IMPLEMENTED
+    def get_mailed_nov_record(row):  # table_number==11
+        cur_tds = row.find_all('td')
+
+        out_dict = dict()
+        out_dict['year'] = helpers.get_int(cur_tds[0].font.string.strip())
+        out_dict['date'] = cur_tds[1].font.string.strip()
+        out_dict['market_value'] = helpers.get_int(cur_tds[2].font.string.strip())
+        out_dict['taxable_market_value'] = helpers.get_int(cur_tds[3].font.string.strip())
+        out_dict['gross_assessed'] = helpers.get_int(cur_tds[4].font.string.strip())
+        out_dict['exemption'] = helpers.get_int(cur_tds[5].font.string.strip())
+        out_dict['net_assessed'] = helpers.get_int(cur_tds[6].font.string.strip())
+        return out_dict
 
     # get_permit_record()
     #
