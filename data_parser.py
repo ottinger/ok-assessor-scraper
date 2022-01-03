@@ -30,15 +30,13 @@ class MultiPageRecordDataParser:
     # get_sae_record()
     #
     # Returns a record in the Property Account Status/Adjustments/Exemptions table.
-    #
-    # NOT TESTED
     @staticmethod
     def get_sae_record(my_row):  # table_number==9
         cur_tds = my_row.find_all('td')
 
         cur_dict = {}
         cur_dict['account_number'] = cur_tds[0].font.string.strip()
-        cur_dict['grant_year'] = cur_tds[1].font.string.strip()
+        cur_dict['grant_year'] = helpers.get_int(cur_tds[1].font.string.strip())
         cur_dict['exemption_description'] = cur_tds[2].font.string.strip()
         cur_dict['amount'] = helpers.get_int(cur_tds[3].font.string.strip())
 
