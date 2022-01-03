@@ -1,10 +1,11 @@
 # data_grabber.py
 #
 # Contains the parts that actually make contact with the County Assessor website.
-# We don't do any parsing here.
+# We don't do any parsing here (except for possibly in the search parser).
 #
 # we should use class for this because it stores session+cookies!
 import enum
+import re
 import requests
 
 from bs4 import BeautifulSoup
@@ -128,3 +129,88 @@ class OklahomaCountyAssessorRecordDataGrabber(DataGrabber):
             results.append(data)
             stop = self._table_on_last_page(data, table_id) if input_name else True
         return results
+
+
+# OklahomaCountyAssessorSearchDataGrabber
+#
+# This class is used to get a list of property ids for a given search query.
+class OklahomaCountyAssessorSearchDataGrabber(DataGrabber):
+    def __init__(self):
+        super().__init__()
+
+        self.search_params = None
+
+    def _do_search(self, search_web_address, input_params):
+        self.session = requests.session()
+        # get the front search page to establish session
+        req = self.session.get("https://docs.oklahomacounty.org/AssessorWP5/DefaultSearch.asp")
+
+        all_rows = []
+        done = False
+        while done == False:
+            req = self.session.post(search_web_address, cookies=req.cookies,
+                                   data=input_params)
+            data = req.text
+            the_soup = BeautifulSoup(data, features="lxml")
+            cur_page_rows = the_soup.find_all('table')[3].tbody.find_all('tr')
+
+            # add the rows
+            for r in cur_page_rows:
+                if not r.find_all('form'):
+                    all_rows.append(r)
+
+            # see if there's a next page, go to next page if so
+            if not cur_page_rows[len(cur_page_rows) - 1].find_all('input', attrs={'value': "  >   "}):
+                done = True
+            else:
+                input_params["fpdbr_0_PagingMove"] = '  >   '  # for subdivision or map number search
+                input_params["fpdbr_1_PagingMove"] = '  >   '  # for name or addr search
+
+        return all_rows
+
+    def _extract_propertyids_from_rows(self, rows):
+        results_list = []
+        for r in rows:
+            cur_url = r.find_all('a')[0]['href']
+            cur_propertyid = re.findall(r".*\.asp\?PROPERTYID=([0-9]+)", cur_url, re.IGNORECASE)[0]
+            results_list.append(int(cur_propertyid))
+        return results_list
+
+    # subdivision_search()
+    #
+    # Calls _do_search() to perform a subdivision search. Returns a list of PROPERTYIDs
+    # for the args passed (subdivision, block, lot)
+    def subdivision_search(self, subdivision, block='', lot=''):
+        search_address = 'https://docs.oklahomacounty.org/AssessorWP5/SubdivisionSearch.asp'
+        input_params = {'SubdivisionName': subdivision,
+                        'Block': block,
+                        'Lot': lot}
+        rows = self._do_search(search_address, input_params)
+        return self._extract_propertyids_from_rows(rows)
+
+    # map_number_search()
+    #
+    # Calls _do_search() to perform a map number/quarter section search.
+    def map_number_search(self, map_number):
+        search_address = 'https://docs.oklahomacounty.org/AssessorWP5/MapNumberSearch.asp'
+        input_params = {'MapNumber': str(map_number)}
+        rows = self._do_search(search_address, input_params)
+        return self._extract_propertyids_from_rows(rows)
+
+    # name_search()
+    #
+    # Calls _do_search() to perform a search by name of property owner.
+    def name_search(self, name):
+        search_address = 'https://docs.oklahomacounty.org/AssessorWP5/NameSearch.asp'
+        input_params = {'name': str(name)}
+        rows = self._do_search(search_address, input_params)
+        return self._extract_propertyids_from_rows(rows)
+
+    # address_search()
+    #
+    # Calls _do_search() to perform a search by address.
+    def address_search(self, address):
+        search_address = 'https://docs.oklahomacounty.org/AssessorWP5/AddressSearch.asp'
+        input_params = {'FormattedLocation': str(address)}
+        rows = self._do_search(search_address, input_params)
+        return self._extract_propertyids_from_rows(rows)
